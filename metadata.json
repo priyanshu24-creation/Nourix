@@ -1,0 +1,5 @@
+{
+  "name": "Nourix",
+  "description": "AI-powered smart fitness and wellness companion for personalized diet, exercise, and mental health support.",
+  "requestFramePermissions": ["microphone", "notifications"]
+}
