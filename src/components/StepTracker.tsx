@@ -1,21 +1,24 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Footprints, Trophy, Flame, Droplets } from 'lucide-react';
-import { useSteps } from '../hooks/useSteps';
+import React from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Footprints, Trophy, Flame, Droplets } from "lucide-react";
+import type { DashboardSnapshot } from "../utils";
 
 interface StepTrackerProps {
-  userId: number;
+  activity: DashboardSnapshot["activity"];
+  onAddSteps: (amount: number) => void;
+  isSyncing: boolean;
 }
 
-export default function StepTracker({ userId }: StepTrackerProps) {
-  const { steps, goal, isGoalReached, addSteps } = useSteps(userId);
-  const progress = Math.min((steps / goal) * 100, 100);
+export default function StepTracker({ activity, onAddSteps, isSyncing }: StepTrackerProps) {
+  const { steps, goal, isGoalReached, calories, distanceKm, progress } = activity;
 
   return (
     <div className="bg-white p-8 rounded-[32px] border border-black/5 shadow-sm">
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-1">Daily Activity</h3>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+            Daily Activity
+          </h3>
           <h2 className="text-3xl font-bold text-zinc-900">Step Counter</h2>
         </div>
         <div className="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600">
@@ -37,7 +40,7 @@ export default function StepTracker({ userId }: StepTrackerProps) {
           <span className="text-zinc-400 ml-2">/ {goal.toLocaleString()} steps</span>
         </div>
         <div className="text-right">
-          <span className="text-sm font-bold text-orange-600">{Math.round(progress)}%</span>
+          <span className="text-sm font-bold text-orange-600">{progress}%</span>
         </div>
       </div>
 
@@ -53,7 +56,9 @@ export default function StepTracker({ userId }: StepTrackerProps) {
             </div>
             <div>
               <p className="text-emerald-900 font-bold">Goal Reached!</p>
-              <p className="text-emerald-700 text-xs">🎉 Congratulations! You have completed your daily goal.</p>
+              <p className="text-emerald-700 text-xs">
+                Daily goal complete. Reward points were added automatically.
+              </p>
             </div>
           </motion.div>
         )}
@@ -65,26 +70,25 @@ export default function StepTracker({ userId }: StepTrackerProps) {
             <Flame size={16} />
             <span className="text-xs font-bold uppercase">Calories</span>
           </div>
-          <p className="text-xl font-bold text-zinc-900">{Math.round(steps * 0.04)} kcal</p>
+          <p className="text-xl font-bold text-zinc-900">{calories} kcal</p>
         </div>
         <div className="bg-zinc-50 p-4 rounded-2xl border border-black/5">
           <div className="flex items-center gap-2 text-blue-600 mb-1">
             <Droplets size={16} />
             <span className="text-xs font-bold uppercase">Distance</span>
           </div>
-          <p className="text-xl font-bold text-zinc-900">{(steps * 0.0008).toFixed(2)} km</p>
+          <p className="text-xl font-bold text-zinc-900">{distanceKm.toFixed(2)} km</p>
         </div>
       </div>
 
       <button
-        onClick={() => addSteps(500)}
-        className="w-full mt-6 py-3 bg-zinc-900 text-white rounded-2xl font-semibold hover:bg-zinc-800 transition-all flex items-center justify-center gap-2"
+        onClick={() => onAddSteps(500)}
+        disabled={isSyncing}
+        className="w-full mt-6 py-3 bg-zinc-900 text-white rounded-2xl font-semibold hover:bg-zinc-800 transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:bg-zinc-700"
       >
         <Footprints size={18} />
-        Simulate 500 Steps
+        {isSyncing ? "Syncing..." : "Simulate 500 Steps"}
       </button>
     </div>
   );
 }
-
-
