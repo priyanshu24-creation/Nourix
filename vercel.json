@@ -6,6 +6,10 @@
     "api/index.ts": {
       "maxDuration": 60,
       "includeFiles": "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
+    },
+    "api/[...route].ts": {
+      "maxDuration": 60,
+      "includeFiles": "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
     }
   },
   "rewrites": [
