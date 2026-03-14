@@ -28,6 +28,7 @@ Environment variables to set in Vercel:
 - `AWS_REGION`
 - `NOVA_MODEL_ID`
 - Any AWS credential source you use for Bedrock
+- `AI_ALLOW_MOCK_FALLBACK` set to `true` if you want deployed AI routes to fall back to built-in mock responses when Bedrock is unavailable
 - `APP_URL`
 - `CORS_ORIGIN` only if you need extra cross-origin callers beyond the deployed app itself
 
@@ -82,6 +83,7 @@ Response body:
 - `NOVA_TEMPERATURE`
 - `NOVA_TOP_P`
 - `NOVA_TIMEOUT_MS`
+- `AI_ALLOW_MOCK_FALLBACK` - Defaults to `true`; when enabled, the app falls back to mock AI responses if Bedrock is unavailable
 - `AWS_ACCESS_KEY_ID` - Optional local dev credentials
 - `AWS_SECRET_ACCESS_KEY` - Optional local dev credentials
 - `AWS_SESSION_TOKEN` - Optional local dev session token

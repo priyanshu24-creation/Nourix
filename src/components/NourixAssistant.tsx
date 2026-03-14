@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Mic, Send, Bot, User, Volume2, VolumeX } from 'lucide-react';
-import { chatWithNourix } from '../services/gemini';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
+import { Mic, Send, Bot } from 'lucide-react';
 import Markdown from 'react-markdown';
+import { chatWithNourix } from '../services/gemini';
 
 interface Message {
   id: string;
@@ -10,13 +10,20 @@ interface Message {
   sender: 'user' | 'nourix';
 }
 
+const initialMessages: Message[] = [
+  {
+    id: '1',
+    text: "Hey, I'm Nourix. I am here to listen, support you, and help you think through whatever is on your mind. How are you feeling right now?",
+    sender: 'nourix',
+  },
+];
+
 export default function NourixAssistant() {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: "Hey! I'm Nourix, your best friend. I'm here to listen and help you through whatever's on your mind—whether it's stress, anxiety, or just a rough day. How are you really feeling right now?", sender: 'nourix' }
-  ]);
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,19 +31,41 @@ export default function NourixAssistant() {
   }, [messages]);
 
   const handleSend = async (text: string) => {
-    if (!text.trim()) return;
+    const trimmed = text.trim();
+    if (!trimmed) return;
 
-    const userMsg: Message = { id: Date.now().toString(), text, sender: 'user' };
-    setMessages(prev => [...prev, userMsg]);
+    const userMsg: Message = { id: Date.now().toString(), text: trimmed, sender: 'user' };
+    const history = messages.map((message) => ({
+      role: message.sender === 'user' ? 'user' : 'assistant',
+      content: message.text,
+    }));
+
+    setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setIsTyping(true);
+    setErrorMessage('');
 
     try {
-      const response = await chatWithNourix(text);
-      const nourixMsg: Message = { id: (Date.now() + 1).toString(), text: response || "I'm sorry, I couldn't process that.", sender: 'nourix' };
-      setMessages(prev => [...prev, nourixMsg]);
+      const response = await chatWithNourix(trimmed, history);
+      const nourixMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        text: response || "I'm sorry, I couldn't process that.",
+        sender: 'nourix',
+      };
+      setMessages((prev) => [...prev, nourixMsg]);
     } catch (error) {
       console.error('Chat error:', error);
+      const nextError =
+        error instanceof Error ? error.message : 'Nourix is temporarily unavailable.';
+      setErrorMessage(nextError);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          text: `I'm having trouble replying right now. ${nextError}`,
+          sender: 'nourix',
+        },
+      ]);
     } finally {
       setIsTyping(false);
     }
@@ -44,7 +73,7 @@ export default function NourixAssistant() {
 
   const toggleVoice = () => {
     if (!('webkitSpeechRecognition' in window)) {
-      alert("Voice recognition not supported in this browser.");
+      alert('Voice recognition not supported in this browser.');
       return;
     }
 
@@ -56,7 +85,7 @@ export default function NourixAssistant() {
     recognition.onend = () => setIsListening(false);
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
-      handleSend(transcript);
+      void handleSend(transcript);
     };
 
     if (isListening) {
@@ -67,18 +96,18 @@ export default function NourixAssistant() {
   };
 
   return (
-    <div className="flex flex-col h-[600px] bg-white rounded-[32px] border border-black/5 overflow-hidden shadow-sm">
-      <div className="p-6 border-bottom border-black/5 flex items-center gap-3 bg-zinc-50">
-        <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+    <div className="flex h-[600px] flex-col overflow-hidden rounded-[32px] border border-black/5 bg-white shadow-sm">
+      <div className="border-bottom flex items-center gap-3 border-black/5 bg-zinc-50 p-6">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
           <Bot size={24} />
         </div>
         <div>
           <h3 className="font-bold text-zinc-900">Nourix AI Assistant</h3>
-          <p className="text-xs text-emerald-600 font-medium">Online & Ready to help</p>
+          <p className="text-xs font-medium text-emerald-600">Online and ready to help</p>
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-6">
         {messages.map((msg) => (
           <motion.div
             key={msg.id}
@@ -86,34 +115,41 @@ export default function NourixAssistant() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`max-w-[80%] p-4 rounded-2xl ${
-              msg.sender === 'user' 
-                ? 'bg-zinc-900 text-white rounded-tr-none' 
-                : 'bg-zinc-100 text-zinc-800 rounded-tl-none'
-            }`}>
-              <div className="prose prose-sm prose-zinc dark:prose-invert">
+            <div
+              className={`max-w-[80%] rounded-2xl p-4 ${
+                msg.sender === 'user'
+                  ? 'rounded-tr-none bg-zinc-900 text-white'
+                  : 'rounded-tl-none bg-zinc-100 text-zinc-800'
+              }`}
+            >
+              <div className="prose prose-sm prose-zinc">
                 <Markdown>{msg.text}</Markdown>
               </div>
             </div>
           </motion.div>
         ))}
-        {isTyping && (
+        {isTyping ? (
           <div className="flex justify-start">
-            <div className="bg-zinc-100 p-4 rounded-2xl rounded-tl-none flex gap-1">
-              <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" />
-              <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:0.2s]" />
-              <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+            <div className="flex gap-1 rounded-2xl rounded-tl-none bg-zinc-100 p-4">
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:0.2s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-400 [animation-delay:0.4s]" />
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
-      <div className="p-4 bg-zinc-50 border-t border-black/5">
+      <div className="border-t border-black/5 bg-zinc-50 p-4">
+        {errorMessage ? (
+          <p className="mb-3 text-sm font-medium text-red-500">{errorMessage}</p>
+        ) : null}
         <div className="flex gap-2">
           <button
             onClick={toggleVoice}
-            className={`p-3 rounded-xl transition-all ${
-              isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-white text-zinc-500 hover:text-emerald-600 border border-black/5'
+            className={`rounded-xl p-3 transition-all ${
+              isListening
+                ? 'animate-pulse bg-red-500 text-white'
+                : 'border border-black/5 bg-white text-zinc-500 hover:text-emerald-600'
             }`}
           >
             <Mic size={20} />
@@ -122,13 +158,17 @@ export default function NourixAssistant() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend(input)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                void handleSend(input);
+              }
+            }}
             placeholder="Ask Nourix anything..."
-            className="flex-1 bg-white border border-black/5 rounded-xl px-4 py-2 outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+            className="flex-1 rounded-xl border border-black/5 bg-white px-4 py-2 outline-none transition-all focus:ring-1 focus:ring-emerald-500"
           />
           <button
-            onClick={() => handleSend(input)}
-            className="p-3 bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 transition-all"
+            onClick={() => void handleSend(input)}
+            className="rounded-xl bg-zinc-900 p-3 text-white transition-all hover:bg-zinc-800"
           >
             <Send size={20} />
           </button>

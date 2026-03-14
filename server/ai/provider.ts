@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { asAiError } from "./errors";
 import { NovaBedrockProvider } from "./novaBedrock";
 import { MockProvider } from "./mockProvider";
 import type { Plan } from "./plan";
@@ -42,21 +43,76 @@ const hasLocalAwsCreds = () => {
   return hasKeys || hasProfile || hasWebIdentity || hasContainerCreds || hasSharedAwsConfig();
 };
 
+const shouldAllowMockFallback = () =>
+  (process.env.AI_ALLOW_MOCK_FALLBACK ?? "true").trim().toLowerCase() !== "false";
+
+class ResilientAiProvider implements AiProvider {
+  private usingFallback = false;
+  private loggedFallback = false;
+
+  constructor(
+    private readonly primary: AiProvider,
+    private readonly fallback: AiProvider,
+    private readonly primaryLabel: string,
+  ) {}
+
+  async generatePlan(prompt: string, requestId?: string, context?: ClientContext): Promise<Plan> {
+    return this.withFallback(
+      "plan",
+      (provider) => provider.generatePlan(prompt, requestId, context),
+    );
+  }
+
+  async chat(message: string, history: ChatHistoryItem[], requestId?: string): Promise<string> {
+    return this.withFallback("chat", (provider) => provider.chat(message, history, requestId));
+  }
+
+  private async withFallback<T>(
+    action: "chat" | "plan",
+    operation: (provider: AiProvider) => Promise<T>,
+  ): Promise<T> {
+    if (this.usingFallback) {
+      return operation(this.fallback);
+    }
+
+    try {
+      return await operation(this.primary);
+    } catch (error) {
+      const aiError = asAiError(error);
+
+      if (!this.loggedFallback) {
+        console.warn(
+          `AI provider "${this.primaryLabel}" failed during ${action} (${aiError.code}). Falling back to mock provider.`,
+        );
+        this.loggedFallback = true;
+      }
+
+      this.usingFallback = true;
+      return operation(this.fallback);
+    }
+  }
+}
+
 export const createAiProvider = (): AiProvider => {
   const provider = (process.env.AI_PROVIDER ?? "nova").toLowerCase();
-  const isDev = process.env.NODE_ENV !== "production";
+  const allowMockFallback = shouldAllowMockFallback();
+  const mockProvider = new MockProvider();
 
   switch (provider) {
     case "mock":
-      return new MockProvider();
+      return mockProvider;
     case "nova":
     default:
-      if (isDev && !hasLocalAwsCreds()) {
+      if (!hasLocalAwsCreds() && allowMockFallback) {
         console.warn(
-          "AI provider: falling back to mock (no AWS credential source found). Configure AWS keys, a profile, or shared ~/.aws config to use Nova.",
+          "AI provider: falling back to mock (no AWS credential source found). Configure AWS keys, a profile, or shared ~/.aws config to use Nova, or set AI_ALLOW_MOCK_FALLBACK=false to fail hard instead.",
         );
-        return new MockProvider();
+        return mockProvider;
       }
-      return new NovaBedrockProvider();
+
+      const novaProvider = new NovaBedrockProvider();
+      return allowMockFallback
+        ? new ResilientAiProvider(novaProvider, mockProvider, "nova")
+        : novaProvider;
   }
 };

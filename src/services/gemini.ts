@@ -22,7 +22,7 @@ const request = async (path: string, body: unknown) => {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const message = (data as ApiError).error || "Request failed";
+    const message = (data as ApiError).error || `Request failed (API ${response.status})`;
     throw new Error(message);
   }
 
