@@ -1,7 +1,6 @@
 import { startTransition, useEffect, useState } from "react";
+import { buildApiUrl } from "../services/api";
 import type { DashboardConnectionMode, DashboardSnapshot, User } from "../utils";
-
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 
 const jsonHeaders = { "Content-Type": "application/json" };
 
@@ -76,7 +75,7 @@ const applyStepDelta = (dashboard: DashboardSnapshot, amount: number): Dashboard
 };
 
 const loadDashboard = async (userId: number): Promise<DashboardSnapshot> => {
-  const response = await fetch(`${API_BASE}/api/user/${userId}/stats`, {
+  const response = await fetch(buildApiUrl(`/api/user/${userId}/stats`), {
     headers: { Accept: "application/json" },
   });
 
@@ -89,7 +88,7 @@ const loadDashboard = async (userId: number): Promise<DashboardSnapshot> => {
 };
 
 const postStepDelta = async (userId: number, amount: number): Promise<DashboardSnapshot> => {
-  const response = await fetch(`${API_BASE}/api/user/${userId}/steps`, {
+  const response = await fetch(buildApiUrl(`/api/user/${userId}/steps`), {
     method: "POST",
     headers: jsonHeaders,
     body: JSON.stringify({ delta: amount }),
@@ -103,7 +102,7 @@ const postStepDelta = async (userId: number, amount: number): Promise<DashboardS
   return data.dashboard as DashboardSnapshot;
 };
 
-const getStreamUrl = (userId: number) => `${API_BASE}/api/user/${userId}/live`;
+const getStreamUrl = (userId: number) => buildApiUrl(`/api/user/${userId}/live`);
 
 export const useLiveDashboard = (user: User) => {
   const [dashboard, setDashboard] = useState<DashboardSnapshot>(() => createFallbackDashboard(user));

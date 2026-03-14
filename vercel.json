@@ -3,19 +3,18 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
-    "api/index.ts": {
-      "maxDuration": 60,
-      "includeFiles": "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
-    },
-    "api/[...route].ts": {
+    "api/**/*.ts": {
       "maxDuration": 60,
       "includeFiles": "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/:path((?!api/)(?!.*\\.).*)",
-      "destination": "/index.html"
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }

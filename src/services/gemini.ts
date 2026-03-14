@@ -1,3 +1,4 @@
+import { buildApiUrl } from "./api";
 type ApiError = { error?: string; code?: string };
 
 export type ClientContext = {
@@ -11,10 +12,8 @@ export type ClientContext = {
   tzOffsetMinutes?: number;
 };
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
-
 const request = async (path: string, body: unknown) => {
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(buildApiUrl(path), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

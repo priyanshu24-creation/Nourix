@@ -1,7 +1,3 @@
-import { attachErrorHandler, createApp } from "../server/app";
-
-const app = createApp();
-
-attachErrorHandler(app);
+import app from "../server/vercel";
 
 export default app;
