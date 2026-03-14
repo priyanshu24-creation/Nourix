@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { LogIn, UserPlus, Activity } from 'lucide-react';
+import { buildApiUrl } from '../services/api';
+import type { User } from '../utils';
 
 interface AuthProps {
-  onLogin: (user: any) => void;
+  onLogin: (user: User) => void;
 }
 
 export default function Auth({ onLogin }: AuthProps) {
@@ -11,20 +13,39 @@ export default function Auth({ onLogin }: AuthProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage('');
+
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(buildApiUrl('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
+
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        user?: User | null;
+      };
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Unable to sign in right now.');
+      }
+
+      if (!data.user) {
+        throw new Error('Login succeeded but no user was returned.');
+      }
+
       onLogin(data.user);
     } catch (error) {
       console.error('Auth error:', error);
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Unable to sign in right now.',
+      );
     } finally {
       setLoading(false);
     }
@@ -82,6 +103,9 @@ export default function Auth({ onLogin }: AuthProps) {
               </>
             )}
           </button>
+          {errorMessage ? (
+            <p className="text-sm font-medium text-red-500">{errorMessage}</p>
+          ) : null}
         </form>
 
         <div className="mt-6 text-center">

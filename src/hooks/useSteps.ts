@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { buildApiUrl } from '../services/api';
 
 export const useSteps = (userId: number | null) => {
   const [steps, setSteps] = useState(0);
@@ -9,7 +10,7 @@ export const useSteps = (userId: number | null) => {
     if (!userId) return;
 
     // Fetch initial stats
-    fetch(`/api/user/${userId}/stats`)
+    fetch(buildApiUrl(`/api/user/${userId}/stats`))
       .then(res => res.json())
       .then(data => {
         if (data.stats) setSteps(data.stats.steps || 0);
@@ -22,7 +23,7 @@ export const useSteps = (userId: number | null) => {
       setIsGoalReached(true);
       // Award points for reaching goal
       if (userId) {
-        fetch(`/api/user/${userId}/points`, {
+        fetch(buildApiUrl(`/api/user/${userId}/points`), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ points: 50 })
@@ -36,7 +37,7 @@ export const useSteps = (userId: number | null) => {
     const newSteps = steps + amount;
     setSteps(newSteps);
     if (userId) {
-      fetch(`/api/user/${userId}/steps`, {
+      fetch(buildApiUrl(`/api/user/${userId}/steps`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ steps: newSteps })

@@ -25,6 +25,7 @@ import PlanGenerator from "./PlanGenerator";
 import Rewards from "./Rewards";
 import { User } from "../utils";
 import { requestNotificationPermission } from "../services/notifications";
+import { buildApiUrl } from "../services/api";
 import { useLiveDashboard } from "../hooks/useLiveDashboard";
 
 interface AppLayoutProps {
@@ -207,7 +208,7 @@ export default function AppLayout({ user, onLogout }: AppLayoutProps) {
       const nextUserName = draftUserName.trim();
 
       if (nextUserName !== liveUser.name) {
-        const response = await fetch(`/api/user/${liveUser.id}/name`, {
+        const response = await fetch(buildApiUrl(`/api/user/${liveUser.id}/name`), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: nextUserName }),
@@ -421,7 +422,7 @@ export default function AppLayout({ user, onLogout }: AppLayoutProps) {
                         className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold text-red-500 transition-all hover:bg-red-50"
                       >
                         <LogOut size={18} />
-                        Sign Out
+                        Reset session
                       </button>
                     </div>
                   </motion.div>
