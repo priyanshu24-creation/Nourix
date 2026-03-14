@@ -48,7 +48,7 @@ export default function App() {
         };
 
         if (!response.ok) {
-          throw new Error(data.error || 'Unable to start the app.');
+          throw new Error(data.error || `Unable to start the app (API ${response.status}).`);
         }
 
         if (!data.user) {
