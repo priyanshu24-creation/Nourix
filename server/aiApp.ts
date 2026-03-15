@@ -5,9 +5,9 @@ import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
-import { createAiProvider } from "./ai/provider";
-import { asAiError } from "./ai/errors";
-import { chatRequestSchema, planRequestSchema } from "./ai/validators";
+import { createAiProvider } from "./ai/provider.js";
+import { asAiError } from "./ai/errors.js";
+import { chatRequestSchema, planRequestSchema } from "./ai/validators.js";
 
 const numberFromEnv = (name: string, fallback: number) => {
   const value = Number(process.env[name]);

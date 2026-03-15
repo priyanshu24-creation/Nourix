@@ -1,4 +1,4 @@
-import { attachErrorHandler, createApp } from "./app";
+import { attachErrorHandler, createApp } from "./app.js";
 
 const app = createApp();
 

@@ -1,3 +1,3 @@
-import app from "../../server/aiApp";
+import app from "../../server/aiApp.js";
 
 export default app;

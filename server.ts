@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
-import { attachErrorHandler, createApp } from "./server/app";
+import { attachErrorHandler, createApp } from "./server/app.js";
 
 const numberFromEnv = (name: string, fallback: number) => {
   const value = Number(process.env[name]);

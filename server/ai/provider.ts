@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { asAiError } from "./errors";
-import { NovaBedrockProvider } from "./novaBedrock";
-import { MockProvider } from "./mockProvider";
-import type { Plan } from "./plan";
-import type { ChatHistoryItem, ClientContext } from "./validators";
+import { asAiError } from "./errors.js";
+import { NovaBedrockProvider } from "./novaBedrock.js";
+import { MockProvider } from "./mockProvider.js";
+import type { Plan } from "./plan.js";
+import type { ChatHistoryItem, ClientContext } from "./validators.js";
 
 export interface AiProvider {
   generatePlan(prompt: string, requestId?: string, context?: ClientContext): Promise<Plan>;

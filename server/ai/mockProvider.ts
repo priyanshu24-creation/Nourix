@@ -1,6 +1,6 @@
-import type { AiProvider } from "./provider";
-import type { Plan } from "./plan";
-import type { ChatHistoryItem, ClientContext } from "./validators";
+import type { AiProvider } from "./provider.js";
+import type { Plan } from "./plan.js";
+import type { ChatHistoryItem, ClientContext } from "./validators.js";
 
 const hasAny = (text: string, keywords: string[]) =>
   keywords.some((keyword) => text.includes(keyword));

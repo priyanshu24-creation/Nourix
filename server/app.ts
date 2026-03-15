@@ -9,9 +9,9 @@ import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import crypto from "crypto";
-import { createAiProvider } from "./ai/provider";
-import { asAiError } from "./ai/errors";
-import { chatRequestSchema, planRequestSchema } from "./ai/validators";
+import { createAiProvider } from "./ai/provider.js";
+import { asAiError } from "./ai/errors.js";
+import { chatRequestSchema, planRequestSchema } from "./ai/validators.js";
 
 const resolveDbPath = () => {
   const configuredPath = process.env.SQLITE_DB_PATH?.trim();

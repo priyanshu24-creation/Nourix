@@ -1,9 +1,9 @@
 ﻿import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
-import { asAiError, AiError } from "./errors";
-import { CHAT_SYSTEM_PROMPT, PLAN_SYSTEM_PROMPT } from "./prompts";
-import { parsePlanResponse } from "./plan";
-import type { AiProvider } from "./provider";
-import type { ChatHistoryItem, ClientContext } from "./validators";
+import { asAiError, AiError } from "./errors.js";
+import { CHAT_SYSTEM_PROMPT, PLAN_SYSTEM_PROMPT } from "./prompts.js";
+import { parsePlanResponse } from "./plan.js";
+import type { AiProvider } from "./provider.js";
+import type { ChatHistoryItem, ClientContext } from "./validators.js";
 
 type ConversationMessage = {
   role: "user" | "assistant";
