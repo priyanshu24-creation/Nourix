@@ -11,7 +11,7 @@ type ConversationMessage = {
 };
 
 const region = process.env.AWS_REGION ?? "us-east-1";
-const modelId = process.env.NOVA_MODEL_ID ?? "amazon.nova-lite-v1:0";
+const modelId = process.env.NOVA_MODEL_ID ?? "us.amazon.nova-2-lite-v1:0";
 const maxTokens = Number(process.env.NOVA_MAX_TOKENS ?? 800);
 const temperature = Number(process.env.NOVA_TEMPERATURE ?? 0.4);
 const topP = Number(process.env.NOVA_TOP_P ?? 0.9);

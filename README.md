@@ -78,7 +78,7 @@ Response body:
 ## Environment Variables
 - `AI_PROVIDER` - AI provider selector, default `nova`
 - `AWS_REGION` - AWS region for Bedrock, e.g. `us-east-1`
-- `NOVA_MODEL_ID` - Amazon Nova model ID, e.g. `amazon.nova-lite-v1:0`
+- `NOVA_MODEL_ID` - Amazon Nova model ID, e.g. `us.amazon.nova-2-lite-v1:0`
 - `NOVA_MAX_TOKENS`
 - `NOVA_TEMPERATURE`
 - `NOVA_TOP_P`
