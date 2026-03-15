@@ -1,3 +1,3 @@
-import app from "../../server/vercel";
+import app from "../../server/aiApp";
 
 export default app;

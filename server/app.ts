@@ -1,4 +1,6 @@
 import "dotenv/config";
+import fs from "node:fs";
+import os from "node:os";
 import express from "express";
 import Database from "better-sqlite3";
 import path from "path";
@@ -11,9 +13,26 @@ import { createAiProvider } from "./ai/provider";
 import { asAiError } from "./ai/errors";
 import { chatRequestSchema, planRequestSchema } from "./ai/validators";
 
-const dbPath =
-  process.env.SQLITE_DB_PATH ||
-  (process.env.VERCEL ? "/tmp/novafit.db" : path.join(process.cwd(), "novafit.db"));
+const resolveDbPath = () => {
+  const configuredPath = process.env.SQLITE_DB_PATH?.trim();
+  if (configuredPath) return configuredPath;
+
+  if (process.env.VERCEL) {
+    return path.join(os.tmpdir(), "novafit.db");
+  }
+
+  return path.join(process.cwd(), "novafit.db");
+};
+
+const ensureParentDirectory = (filePath: string) => {
+  const parentDir = path.dirname(filePath);
+  if (!parentDir || parentDir === "." || fs.existsSync(parentDir)) return;
+  fs.mkdirSync(parentDir, { recursive: true });
+};
+
+const dbPath = resolveDbPath();
+
+ensureParentDirectory(dbPath);
 
 const db = new Database(dbPath);
 
